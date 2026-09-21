@@ -164,7 +164,7 @@ body {
 }
 
 /* Adapt legacy text-white classes for Light Mode, keeping badges & colored buttons intact */
-[data-theme="light"] .text-white:not(.btn-primary):not(.btn-danger):not(.badge):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-green"]):not([class*="bg-amber"]):not([class*="bg-blue"]):not([class*="bg-violet"]):not([class*="bg-indigo"]):not([class*="bg-black"]) {
+[data-theme="light"] .text-white:not(.btn-primary):not(.btn-danger):not(.badge):not(.login-submit-btn):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-green"]):not([class*="bg-amber"]):not([class*="bg-blue"]):not([class*="bg-violet"]):not([class*="bg-indigo"]):not([class*="bg-black"]) {
   color: rgb(var(--text-primary));
 }
 
@@ -225,6 +225,34 @@ html.dark .btn-primary {
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Luxury Theme-Adaptive Login Submit Button ── */
+.login-submit-btn {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25), 0 4px 6px -2px rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+  box-shadow: 0 14px 28px -5px rgba(15, 23, 42, 0.35);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .login-submit-btn,
+html.dark .login-submit-btn {
+  background: linear-gradient(135deg, #D97706 0%, #F59E0B 50%, #E31E24 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4), 0 8px 10px -6px rgba(217, 119, 6, 0.2);
+  border: none;
+}
+
+[data-theme="dark"] .login-submit-btn:hover:not(:disabled),
+html.dark .login-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 14px 30px -5px rgba(217, 119, 6, 0.55);
 }
 
 .btn-ghost {

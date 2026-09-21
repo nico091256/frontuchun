@@ -247,25 +247,21 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full relative group overflow-hidden rounded-xl py-3.5 px-6 font-semibold text-white shadow-lg transition-all duration-300 transform active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, #D97706 0%, #F59E0B 50%, #E31E24 100%)',
-                  boxShadow: '0 10px 25px -5px rgba(217, 119, 6, 0.4), 0 8px 10px -6px rgba(217, 119, 6, 0.2)'
-                }}
+                className="login-submit-btn w-full relative group overflow-hidden rounded-xl py-3.5 px-6 font-semibold transition-all duration-300 transform active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 {/* Shimmer light effect */}
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
 
-                <div className="relative flex items-center justify-center gap-2.5">
+                <div className="relative flex items-center justify-center gap-2.5 text-white">
                   {isLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Tekshirilmoqda...</span>
+                      <span className="text-white">Tekshirilmoqda...</span>
                     </>
                   ) : (
                     <>
-                      <span>Tizimga kirish</span>
-                      <ArrowRight size={18} className="transition-transform group-hover:translate-x-1 duration-200" />
+                      <span className="text-white tracking-wide">Tizimga kirish</span>
+                      <ArrowRight size={18} className="text-amber-400 transition-transform group-hover:translate-x-1 duration-200 flex-shrink-0" />
                     </>
                   )}
                 </div>
