@@ -9,13 +9,19 @@ const nextConfig: NextConfig = {
         port: '5000',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'backenduchun-production.up.railway.app',
+        pathname: '/uploads/**',
+      },
     ],
   },
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*',
+        destination:
+          process.env.NEXT_PUBLIC_API_URL || 'https://backenduchun-production.up.railway.app/api/:path*',
       },
     ];
   },

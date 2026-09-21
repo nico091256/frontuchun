@@ -74,8 +74,14 @@ export default function LoginPage() {
       const currentRole = useAuthStore.getState().user?.role;
       router.push(getRoleHomePath(currentRole));
     } catch (err: unknown) {
-      const errorData = (err as { response?: { data?: { message?: string } } });
-      toast.error(errorData?.response?.data?.message || 'Email yoki parol noto\'g\'ri kiritildi');
+      const errorData = err as { response?: { data?: { message?: string } }; message?: string };
+      if (errorData?.response?.data?.message) {
+        toast.error(errorData.response.data.message);
+      } else if (errorData?.message === 'Network Error' || !errorData?.response) {
+        toast.error('Serverga ulanib bo\'lmadi. Backend ishlayotganini tekshiring.');
+      } else {
+        toast.error('Email yoki parol noto\'g\'ri kiritildi');
+      }
     }
   };
 

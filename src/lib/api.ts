@@ -1,6 +1,25 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const isBrowser = typeof window !== 'undefined';
+const isLocalhost = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+export const BACKEND_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  (isLocalhost
+    ? 'http://localhost:5000'
+    : 'https://backenduchun-production.up.railway.app');
+
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (isLocalhost
+    ? 'http://localhost:5000/api'
+    : 'https://backenduchun-production.up.railway.app/api');
+
+export const getFileUrl = (path?: string | null): string => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${BACKEND_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 export const api = axios.create({
   baseURL: API_URL,
