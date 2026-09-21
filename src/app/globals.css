@@ -228,6 +228,15 @@ html.dark .btn-primary {
 }
 
 /* ── Luxury Theme-Adaptive Login Submit Button ── */
+.login-submit-btn,
+.login-submit-btn span,
+.login-submit-btn div,
+[data-theme="light"] .login-submit-btn,
+[data-theme="light"] .login-submit-btn span,
+[data-theme="light"] .login-submit-btn div {
+  color: #FFFFFF !important;
+}
+
 .login-submit-btn {
   background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
   color: #FFFFFF !important;

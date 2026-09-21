@@ -252,15 +252,15 @@ export default function LoginPage() {
                 {/* Shimmer light effect */}
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
 
-                <div className="relative flex items-center justify-center gap-2.5 text-white">
+                <div className="relative flex items-center justify-center gap-2.5" style={{ color: '#FFFFFF' }}>
                   {isLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span className="text-white">Tekshirilmoqda...</span>
+                      <span style={{ color: '#FFFFFF' }}>Tekshirilmoqda...</span>
                     </>
                   ) : (
                     <>
-                      <span className="text-white tracking-wide">Tizimga kirish</span>
+                      <span className="tracking-wide" style={{ color: '#FFFFFF' }}>Tizimga kirish</span>
                       <ArrowRight size={18} className="text-amber-400 transition-transform group-hover:translate-x-1 duration-200 flex-shrink-0" />
                     </>
                   )}
