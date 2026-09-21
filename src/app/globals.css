@@ -299,6 +299,17 @@ html.dark .btn-primary {
   cursor: not-allowed;
 }
 
+/* Chrome/Safari Autofill Dark Mode & Contrast Fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgb(var(--bg-elevated)) inset !important;
+  -webkit-text-fill-color: rgb(var(--text-primary)) !important;
+  caret-color: rgb(var(--text-primary)) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .select-field {
   padding: 10px 14px;
   background: rgb(var(--bg-elevated));

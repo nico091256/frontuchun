@@ -179,14 +179,15 @@ export default function LoginPage() {
                   Korporativ Email
                 </label>
                 <div className="relative group">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-amber-500 transition-colors">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500 group-focus-within:text-amber-500 transition-colors z-10">
                     <Mail size={18} />
                   </div>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input-field pl-11 pr-4 py-3 text-sm rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500/30"
+                    style={{ paddingLeft: '44px', paddingRight: '16px' }}
+                    className="input-field py-3 text-sm rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500/30"
                     placeholder="xodim@bpm.uz"
                     autoComplete="email"
                     required
@@ -202,14 +203,15 @@ export default function LoginPage() {
                   </label>
                 </div>
                 <div className="relative group">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-amber-500 transition-colors">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500 group-focus-within:text-amber-500 transition-colors z-10">
                     <Lock size={18} />
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input-field pl-11 pr-12 py-3 text-sm rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500/30"
+                    style={{ paddingLeft: '44px', paddingRight: '44px' }}
+                    className="input-field py-3 text-sm rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500/30"
                     placeholder="••••••••••••"
                     autoComplete="current-password"
                     required
@@ -217,7 +219,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all z-10"
                     title={showPassword ? 'Parolni yashirish' : 'Parolni ko\u2018rsatish'}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
