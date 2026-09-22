@@ -3,7 +3,7 @@ import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationStore } from '@/store/notificationStore';
-import api from '@/lib/api';
+import api, { getFileUrl } from '@/lib/api';
 import { Document } from '@/types';
 import {
   ArrowLeft, FileText, Download, Send, CheckCircle, XCircle,
@@ -86,7 +86,7 @@ function AttachmentCard({
 
       {fileUrl ? (
         <a
-          href={`${process.env.NEXT_PUBLIC_SOCKET_URL}${fileUrl}`}
+          href={getFileUrl(fileUrl)}
           target="_blank"
           rel="noopener noreferrer"
           className={`group relative flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
@@ -1118,7 +1118,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
                 {document.attachments.map((att, idx) => {
                   const cleanName = fixEncoding(att.fileName);
                   const meta = getFileTypeMeta(cleanName);
-                  const fullUrl = `${process.env.NEXT_PUBLIC_SOCKET_URL}${att.fileUrl}`;
+                  const fullUrl = getFileUrl(att.fileUrl);
                   return (
                     <div
                       key={att.id}

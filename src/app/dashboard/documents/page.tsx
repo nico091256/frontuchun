@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationStore } from '@/store/notificationStore';
-import api from '@/lib/api';
+import api, { getFileUrl } from '@/lib/api';
 import { Document, DocumentStatus, Priority, DocumentType } from '@/types';
 import {
   FileText, Plus, Search, ChevronLeft, ChevronRight,
@@ -540,7 +540,7 @@ export default function DocumentsPage() {
                         >
                           {doc.fileUrl && (
                             <a
-                              href={`${process.env.NEXT_PUBLIC_SOCKET_URL}${doc.fileUrl}`}
+                              href={getFileUrl(doc.fileUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="w-8 h-8 rounded-lg flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-cyan-500 hover:bg-cyan-500/15 border border-[rgb(var(--border))] transition-all"
