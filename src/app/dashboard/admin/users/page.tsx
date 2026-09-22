@@ -223,7 +223,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label:'Jami',        value:stats.total,    icon:Users,       color:'rgb(139 92 246)' },
           { label:'Admin',       value:stats.admins,   icon:Shield,      color:'rgb(167 139 250)' },
@@ -234,12 +234,12 @@ export default function AdminUsersPage() {
           return (
             <div key={s.label} className="stat-card p-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: s.color+'20' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: s.color+'20' }}>
                   <Icon size={15} style={{ color: s.color }} />
                 </div>
-                <span className="text-xs text-[rgb(var(--text-muted))]">{s.label}</span>
+                <span className="text-xs text-[rgb(var(--text-muted))] truncate">{s.label}</span>
               </div>
-              <div className="text-2xl font-bold text-[rgb(var(--text-primary))]">{s.value}</div>
+              <div className="text-xl sm:text-2xl font-bold text-[rgb(var(--text-primary))]">{s.value}</div>
             </div>
           );
         })}
@@ -281,8 +281,8 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Table */}
-      <div className="glass-card overflow-hidden">
-        <table className="data-table">
+      <div className="glass-card overflow-x-auto">
+        <table className="data-table w-full min-w-[640px]">
           <thead>
             <tr>
               <th>Foydalanuvchi</th>

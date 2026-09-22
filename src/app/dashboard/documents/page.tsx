@@ -199,8 +199,8 @@ export default function DocumentsPage() {
         )}
       </div>
 
-      {/* Main Document Type Tabs (Daftar ko'rinishidagi asosiy tablar) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Main Document Type Tabs (2x2 on mobile, 4 columns on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {docTypeTabs.map((tab) => {
           const active = docType === tab.value;
           let count = stats?.total || 0;
@@ -212,16 +212,16 @@ export default function DocumentsPage() {
             <button
               key={tab.value}
               onClick={() => handleDocTypeChange(tab.value)}
-              className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
+              className={`p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
                 active
                   ? 'bg-[rgb(var(--bg-surface))] border-[rgb(var(--primary))] shadow-md shadow-[rgb(var(--primary)/0.08)] ring-1 ring-[rgb(var(--primary)/0.3)]'
                   : 'bg-[rgb(var(--bg-surface))] border-[rgb(var(--border))] hover:border-[rgb(var(--border-hover))] hover:bg-[rgb(var(--bg-elevated))]'
               }`}
             >
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-xl">{tab.icon}</span>
+              <div className="flex items-center justify-between gap-1 mb-1 sm:mb-2">
+                <span className="text-lg sm:text-xl">{tab.icon}</span>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-bold transition-colors ${
+                  className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold transition-colors ${
                     active
                       ? 'bg-[rgb(var(--primary))] text-black font-extrabold'
                       : 'bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] border border-[rgb(var(--border))]'
@@ -231,10 +231,10 @@ export default function DocumentsPage() {
                 </span>
               </div>
               <div>
-                <p className={`text-sm font-bold leading-tight ${active ? 'text-[rgb(var(--primary))]' : 'text-[rgb(var(--text-primary))]'}`}>
+                <p className={`text-xs sm:text-sm font-bold leading-tight ${active ? 'text-[rgb(var(--primary))]' : 'text-[rgb(var(--text-primary))]'}`}>
                   {tab.label}
                 </p>
-                <p className="text-[11px] text-[rgb(var(--text-muted))] mt-0.5 line-clamp-1">
+                <p className="text-[10px] sm:text-[11px] text-[rgb(var(--text-muted))] mt-0.5 line-clamp-1">
                   {tab.desc}
                 </p>
               </div>
@@ -244,20 +244,20 @@ export default function DocumentsPage() {
       </div>
 
       {/* Quick Status Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-[rgb(var(--border))] text-xs">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 border-b border-[rgb(var(--border))] text-xs no-scrollbar min-w-0">
         {statusTabs.map((tab) => {
           const active = status === tab.value;
           return (
             <button
               key={tab.value}
               onClick={() => handleStatusChange(tab.value)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
                 active
                   ? 'bg-[rgb(var(--primary)/0.15)] text-[rgb(var(--primary))] border border-[rgb(var(--primary)/0.35)] shadow-sm font-semibold'
                   : 'text-[rgb(var(--text-secondary))] hover:text-[rgb(var(--text-primary))] hover:bg-[rgb(var(--bg-elevated))] border border-transparent'
               }`}
             >
-              {tab.icon && <span>{tab.icon}</span>}
+              {tab.icon && <span className="shrink-0">{tab.icon}</span>}
               <span>{tab.label}</span>
             </button>
           );
@@ -265,9 +265,9 @@ export default function DocumentsPage() {
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="glass-card p-3 flex flex-col gap-2.5 border border-[rgb(var(--border))]">
+      <div className="glass-card p-2.5 sm:p-3 flex flex-col sm:flex-row items-center gap-2.5 border border-[rgb(var(--border))]">
         {/* Search input */}
-        <div className="relative w-full">
+        <div className="relative w-full flex-1">
           <Search
             size={16}
             className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[rgb(var(--text-muted))]"
@@ -279,7 +279,7 @@ export default function DocumentsPage() {
               setPage(1);
             }}
             placeholder="Hujjat nomi, raqami yoki tashkilot..."
-            className="input-field !pl-10 !pr-9 !py-2.5 rounded-xl text-sm w-full"
+            className="input-field !pl-10 !pr-9 !py-2.5 rounded-xl text-xs sm:text-sm w-full"
           />
           {search && (
             <button
@@ -295,14 +295,14 @@ export default function DocumentsPage() {
         </div>
 
         {/* Priority Filter */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
             value={priority}
             onChange={(e) => {
               setPriority(e.target.value as Priority | '');
               setPage(1);
             }}
-            className="select-field !py-2 px-3 rounded-xl text-sm flex-1 min-w-0"
+            className="select-field !py-2.5 px-3 rounded-xl text-xs sm:text-sm flex-1 sm:w-44"
           >
             {priorityOptions.map((o) => (
               <option key={o.value} value={o.value} className="bg-[rgb(var(--bg-surface))] text-[rgb(var(--text-primary))]">
@@ -319,10 +319,10 @@ export default function DocumentsPage() {
                 handleStatusChange('');
                 handleDocTypeChange('');
               }}
-              className="text-xs text-[rgb(var(--text-muted))] hover:text-rose-500 px-3 py-2.5 rounded-xl hover:bg-rose-500/10 transition-all whitespace-nowrap flex-shrink-0"
+              className="text-xs text-[rgb(var(--text-muted))] hover:text-rose-500 px-3 py-2.5 rounded-xl hover:bg-rose-500/10 transition-all whitespace-nowrap shrink-0"
               title="Barcha filtrlarni tozalash"
             >
-              Filtrlarni tozalash
+              Tozalash
             </button>
           )}
         </div>
