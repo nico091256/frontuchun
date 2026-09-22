@@ -76,25 +76,25 @@ export default function DashboardPage() {
   return (
     <div className="animate-fade-in space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[rgb(var(--text-primary))] mb-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-[rgb(var(--text-primary))] mb-1">
             Xush kelibsiz, {user?.fullName?.split(' ')[0]}! 👋
           </h1>
-          <p className="text-sm text-[rgb(var(--text-muted))]">
+          <p className="text-xs sm:text-sm text-[rgb(var(--text-muted))]">
             {user?.department} • {new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
         {(user?.role === 'INITIATOR' || user?.role === 'ADMIN') && (
-          <Link href="/dashboard/documents/new" className="btn-primary">
+          <Link href="/dashboard/documents/new" className="btn-primary shrink-0">
             <PlusCircle size={16} />
             Yangi hujjat
           </Link>
         )}
       </div>
 
-      {/* Correspondence Logbook Stream Overview (Kiruvchi / Chiquvchi / Ichki) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Correspondence Logbook Stream Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Link
           href="/dashboard/documents?docType=INCOMING"
           className="glass-card p-5 border-sky-500/30 hover:border-sky-500/60 bg-sky-500/[0.04] hover:bg-sky-500/[0.08] transition-all group flex items-center justify-between"
@@ -154,7 +154,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {statCards.map((card) => {
           const Icon = card.icon;
           const color = colorMap[card.color];
@@ -180,7 +180,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="glass-card p-6">
             <h2 className="text-base font-semibold text-[rgb(var(--text-primary))] mb-6">Statuslar bo'yicha</h2>
-            <div className="h-64">
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -225,7 +225,7 @@ export default function DashboardPage() {
             <h2 className="text-base font-semibold mb-6" style={{ color: 'rgb(var(--text-primary))' }}>
               Kategoriyalar bo'yicha
             </h2>
-            <div className="h-64">
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.byCategory || []} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                   <XAxis dataKey="name" tick={{ fill: 'rgb(var(--text-muted))', fontSize: 12 }} axisLine={false} tickLine={false} />

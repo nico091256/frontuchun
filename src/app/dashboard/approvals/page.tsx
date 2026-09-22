@@ -138,7 +138,7 @@ export default function ApprovalsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[rgb(var(--text-primary))] mb-1">Tasdiqlashlar</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[rgb(var(--text-primary))] mb-1">Tasdiqlashlar</h1>
           <p className="text-sm text-[rgb(var(--text-muted))]">
             Hujjatlar harakati va tasdiqlash jarayonlari nazorati
           </p>
@@ -160,35 +160,37 @@ export default function ApprovalsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-1.5 p-1.5 rounded-xl w-fit border border-[rgb(var(--border))]" style={{ background: 'rgb(var(--bg-elevated))' }}>
-        {tabsConfig.map((t) => {
-          const Icon = t.icon;
-          const isActive = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => changeTab(t.id)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-              style={{
-                background: isActive ? 'rgba(217, 119, 6, 0.15)' : 'transparent',
-                color: isActive ? '#D97706' : 'rgb(var(--text-secondary))',
-                border: isActive ? '1px solid rgba(217, 119, 6, 0.35)' : '1px solid transparent',
-              }}
-            >
-              <Icon size={15} />
-              <span>{t.label}</span>
-              <span
-                className="px-2 py-0.5 rounded-full text-xs font-semibold"
+      <div className="overflow-x-auto pb-1">
+        <div className="flex gap-1.5 p-1.5 rounded-xl w-max sm:w-fit border border-[rgb(var(--border))]" style={{ background: 'rgb(var(--bg-elevated))' }}>
+          {tabsConfig.map((t) => {
+            const Icon = t.icon;
+            const isActive = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => changeTab(t.id)}
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap"
                 style={{
-                  background: isActive ? 'rgba(217, 119, 6, 0.25)' : t.badgeBg,
-                  color: isActive ? '#D97706' : t.badgeColor,
+                  background: isActive ? 'rgba(217, 119, 6, 0.15)' : 'transparent',
+                  color: isActive ? '#D97706' : 'rgb(var(--text-secondary))',
+                  border: isActive ? '1px solid rgba(217, 119, 6, 0.35)' : '1px solid transparent',
                 }}
               >
-                {t.count}
-              </span>
-            </button>
-          );
-        })}
+                <Icon size={14} />
+                <span className="hidden xs:inline sm:inline">{t.label}</span>
+                <span
+                  className="px-1.5 py-0.5 rounded-full text-xs font-semibold"
+                  style={{
+                    background: isActive ? 'rgba(217, 119, 6, 0.25)' : t.badgeBg,
+                    color: isActive ? '#D97706' : t.badgeColor,
+                  }}
+                >
+                  {t.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Documents List */}

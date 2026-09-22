@@ -94,7 +94,7 @@ export default function Navbar() {
         </div>
 
         {/* Search */}
-        <div className="relative hidden sm:block">
+        <div className="relative hidden md:block">
           <Search
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -111,7 +111,7 @@ export default function Navbar() {
               background: 'rgb(var(--bg-elevated))',
               border: '1px solid rgb(var(--border))',
               color: 'rgb(var(--text-primary))',
-              width: '280px',
+              width: '240px',
             }}
           />
         </div>
@@ -150,9 +150,8 @@ export default function Navbar() {
           {/* Notification Panel */}
           {showNotifications && (
             <div
-              className="absolute right-0 top-full mt-2 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in"
+              className="notification-panel absolute right-0 top-full mt-2 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in"
               style={{
-                width: '380px',
                 background: 'rgb(var(--bg-surface))',
                 border: '1px solid rgb(var(--border))',
                 boxShadow: 'var(--card-shadow-hover)',

@@ -551,15 +551,15 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
   const deadline = getDeadlineStatus(document.overallDeadline);
 
   return (
-    <div className="animate-fade-in space-y-6 max-w-4xl mx-auto">
+    <div className="animate-fade-in space-y-5 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="btn-ghost p-2">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <button onClick={() => router.back()} className="btn-ghost p-2 shrink-0">
             <ArrowLeft size={18} />
           </button>
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-1">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 mb-1">
               <span className="doc-badge font-bold">{document.docNumber}</span>
               {document.senderDocNumber && (
                 <span className="doc-badge font-bold bg-sky-50 dark:bg-sky-500/15 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-500/40">
@@ -576,7 +576,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
                 <span className={`text-xs ${pc.color}`}>{pc.label}</span>
               </div>
             </div>
-            <h1 className="text-xl font-bold text-[rgb(var(--text-primary))]">{fixEncoding(document.title)}</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-[rgb(var(--text-primary))] leading-snug">{fixEncoding(document.title)}</h1>
           </div>
         </div>
 

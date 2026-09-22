@@ -265,9 +265,9 @@ export default function DocumentsPage() {
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="glass-card p-3.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border border-[rgb(var(--border))]">
+      <div className="glass-card p-3 flex flex-col gap-2.5 border border-[rgb(var(--border))]">
         {/* Search input */}
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative w-full">
           <Search
             size={16}
             className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[rgb(var(--text-muted))]"
@@ -278,8 +278,8 @@ export default function DocumentsPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Hujjat nomi, raqami, tashkilot nomi yoki yuboruvchi raqami..."
-            className="input-field !pl-10 !pr-9 !py-2.5 rounded-xl text-sm"
+            placeholder="Hujjat nomi, raqami yoki tashkilot..."
+            className="input-field !pl-10 !pr-9 !py-2.5 rounded-xl text-sm w-full"
           />
           {search && (
             <button
@@ -302,7 +302,7 @@ export default function DocumentsPage() {
               setPriority(e.target.value as Priority | '');
               setPage(1);
             }}
-            className="select-field !py-2.5 px-3 rounded-xl text-sm min-w-[170px]"
+            className="select-field !py-2 px-3 rounded-xl text-sm flex-1 min-w-0"
           >
             {priorityOptions.map((o) => (
               <option key={o.value} value={o.value} className="bg-[rgb(var(--bg-surface))] text-[rgb(var(--text-primary))]">
@@ -319,7 +319,7 @@ export default function DocumentsPage() {
                 handleStatusChange('');
                 handleDocTypeChange('');
               }}
-              className="text-xs text-[rgb(var(--text-muted))] hover:text-rose-500 px-2.5 py-2.5 rounded-xl hover:bg-rose-500/10 transition-all whitespace-nowrap"
+              className="text-xs text-[rgb(var(--text-muted))] hover:text-rose-500 px-3 py-2.5 rounded-xl hover:bg-rose-500/10 transition-all whitespace-nowrap flex-shrink-0"
               title="Barcha filtrlarni tozalash"
             >
               Filtrlarni tozalash
@@ -357,8 +357,90 @@ export default function DocumentsPage() {
           </div>
         ) : (
           <div className="w-full">
-            <table className="data-table w-full text-xs sm:text-sm">
-              <thead>
+
+            {/* ── MOBILE CARD VIEW (< 640px) ── */}
+            <div className="mobile-card-list sm:hidden">
+              {documents.map((doc, idx) => {
+                const sc = statusConfig[doc.status];
+                const dt = doc.docType || 'INTERNAL';
+                const dtc = docTypeConfig[dt] || docTypeConfig.INTERNAL;
+                const itemNumber = (page - 1) * 10 + idx + 1;
+                const totalAttachments = (doc.attachments?.length || 0) + (doc.fileUrl ? 1 : 0);
+                const org = dt === 'INCOMING' ? doc.senderOrg
+                  : dt === 'OUTGOING' ? doc.recipientOrg
+                  : doc.creator?.department;
+                return (
+                  <div
+                    key={doc.id}
+                    className="mobile-doc-card"
+                    onClick={() => router.push(`/dashboard/documents/${doc.id}`)}
+                  >
+                    {/* satir 1: raqam + status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="text-[10px] font-mono text-[rgb(var(--text-muted))] shrink-0">#{itemNumber}</span>
+                        <span className="doc-badge font-mono text-[11px] truncate max-w-[110px]">{doc.docNumber}</span>
+                        <span className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border font-semibold shrink-0 ${dtc.bg} ${dtc.color} ${dtc.border}`}>
+                          <span>{dtc.icon}</span><span>{dtc.shortLabel}</span>
+                        </span>
+                      </div>
+                      <span className={`badge ${sc.bg} ${sc.color} text-[10px] font-semibold py-0.5 px-2 shrink-0 whitespace-nowrap`}>
+                        {sc.icon && <span className="mr-0.5">{sc.icon}</span>}{sc.label}
+                      </span>
+                    </div>
+                    {/* satir 2: sarlavha */}
+                    <p className="text-sm font-semibold text-[rgb(var(--text-primary))] line-clamp-2 leading-snug">
+                      {fixEncoding(doc.title)}
+                    </p>
+                    {/* satir 3: tashkilot + sana */}
+                    <div className="flex items-center justify-between gap-2 text-xs text-[rgb(var(--text-muted))]">
+                      {org && (
+                        <div className="flex items-center gap-1 min-w-0">
+                          <Building2 size={11} className="shrink-0" />
+                          <span className="truncate">{org}</span>
+                        </div>
+                      )}
+                      <span className="shrink-0">{formatDate(doc.createdAt)}</span>
+                    </div>
+                    {/* satir 4: kategoriya + amallar */}
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-[rgb(var(--border))]">
+                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] border border-[rgb(var(--border))] font-medium truncate max-w-[100px]">
+                          {doc.category}
+                        </span>
+                        {totalAttachments > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 font-semibold shrink-0">
+                            <Paperclip size={10} /> {totalAttachments}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {doc.fileUrl && (
+                          <a href={getFileUrl(doc.fileUrl)} target="_blank" rel="noopener noreferrer"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-cyan-500 border border-[rgb(var(--border))] transition-all"
+                            title="Yuklab olish">
+                            <Download size={13} />
+                          </a>
+                        )}
+                        {(user?.role === 'ADMIN' || hasPermission(user, 'DOC_DELETE') ||
+                          (doc.creatorId === user?.id && ['DRAFT', 'REJECTED'].includes(doc.status))) && (
+                          <button onClick={() => handleDelete(doc.id)}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-rose-500 border border-[rgb(var(--border))] transition-all"
+                            title="O'chirish">
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── DESKTOP TABLE VIEW (>= 640px) ── */}
+            <div className="hidden sm:block table-responsive">
+              <table className="data-table w-full text-xs sm:text-sm" style={{ minWidth: '780px' }}>
+                <thead>
                 <tr className="border-b border-[rgb(var(--border))] text-left text-[11px] font-bold text-[rgb(var(--text-muted))] uppercase tracking-wider bg-[rgb(var(--bg-elevated)/0.5)]">
                   <th className="py-3 px-2 w-[4%] text-center">№</th>
                   <th className="py-3 px-3 w-[18%]">Hujjat raqamlari</th>
@@ -572,20 +654,19 @@ export default function DocumentsPage() {
                     </tr>
                   );
                 })}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* Pagination */}
         {meta.totalPages > 1 && (
-          <div
-            className="flex items-center justify-between px-6 py-4 border-t border-[rgb(var(--border))]"
-          >
-            <span className="text-xs text-[rgb(var(--text-muted))]">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-t border-[rgb(var(--border))]">
+            <span className="hidden sm:block text-xs text-[rgb(var(--text-muted))]">
               {meta.total} tadan {(page - 1) * 10 + 1}–{Math.min(page * 10, meta.total)} ko&apos;rsatilmoqda
             </span>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center w-full sm:w-auto justify-between sm:justify-end">
               <button
                 disabled={page === 1}
                 onClick={() => setPage(page - 1)}
