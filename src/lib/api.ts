@@ -70,6 +70,13 @@ api.interceptors.response.use(
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', newRefreshToken);
 
+        try {
+          const { useAuthStore } = require('../store/authStore');
+          useAuthStore.getState().setTokens(accessToken, newRefreshToken);
+        } catch {
+          // Store sync fallback
+        }
+
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         }
@@ -79,11 +86,16 @@ api.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('bpm-auth');
+        try {
+          const { useAuthStore } = require('../store/authStore');
+          useAuthStore.getState().logout().catch(() => {});
+        } catch {}
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
         return Promise.reject(error);
       }
+
     }
 
     return Promise.reject(error);
