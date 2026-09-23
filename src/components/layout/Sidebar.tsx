@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Trophy,
   Bookmark,
+  Inbox,
 } from 'lucide-react';
 import { cn, roleLabels, hasPermission } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -32,6 +33,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Bosh sahifa', icon: LayoutDashboard, roles: ['ADMIN'] },
+  { href: '/dashboard/incoming-emails', label: 'Kiruvchi Xatlar 📩', icon: Inbox },
   { href: '/dashboard/documents', label: 'Hujjatlar', icon: FileText },
   { href: '/dashboard/templates', label: 'Hujjat shablonlari', icon: Bookmark },
   { href: '/dashboard/approvals', label: 'Tasdiqlashlar', icon: CheckSquare },
@@ -42,6 +44,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/profile', label: 'Profil', icon: Settings },
   { href: '/dashboard/kpi', label: 'KPI va Samaradorlik', icon: TrendingUp },
 ];
+
 
 export default function Sidebar() {
   const pathname = usePathname();

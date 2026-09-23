@@ -91,3 +91,41 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+export interface IncomingEmailDocument {
+  id: number;
+  docNumber: string;
+  title: string;
+  description: string;
+  category: string;
+  status: string;
+  priority: string;
+  senderOrg?: string | null;
+  senderDocNumber?: string | null;
+  senderDate?: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+  overallDeadline?: string | null;
+  resolution?: string | null;
+  createdAt: string;
+  creator?: { id: number; fullName: string; email: string; department?: string | null };
+  executor?: { id: number; fullName: string; email: string; department?: string | null };
+  attachments?: { id: number; fileUrl: string; fileName: string; fileSize?: number | null }[];
+}
+
+export const getIncomingEmails = async (params?: { status?: string; search?: string; page?: number; limit?: number }) => {
+  const response = await api.get('/incoming-emails', { params });
+  return response.data;
+};
+
+export const assignIncomingEmail = async (docId: number, data: { executorId: number; overallDeadline?: string; resolution?: string; priority?: string }) => {
+  const response = await api.post(`/incoming-emails/${docId}/assign`, data);
+  return response.data;
+};
+
+export const syncIncomingEmails = async () => {
+  const response = await api.post('/incoming-emails/sync');
+  return response.data;
+};
+
