@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────
 // ENUMS
 // ─────────────────────────────────────────────
-export type Role = 'INITIATOR' | 'APPROVER' | 'ADMIN' | 'EXECUTOR';
+export type Role = 'INITIATOR' | 'APPROVER' | 'ADMIN' | 'EXECUTOR' | 'SECRETARY';
 
 export type DocumentStatus =
   | 'DRAFT'
@@ -24,7 +24,10 @@ export type Permission =
   | 'DOC_EXECUTE'
   | 'REPORTS_VIEW'
   | 'USERS_MANAGE'
-  | 'DOC_DELETE';
+  | 'DOC_DELETE'
+  | 'INCOMING_MANAGE'
+  | 'TEMPLATES_MANAGE';
+
 
 // ─────────────────────────────────────────────
 // ATTACHMENT

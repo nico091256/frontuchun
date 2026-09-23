@@ -119,6 +119,7 @@ export const roleLabels: Record<string, string> = {
   INITIATOR: 'Tashabbuskor',
   APPROVER: 'Tasdiqlovchi',
   EXECUTOR: 'Ijrochi',
+  SECRETARY: 'Kanselyariya (KOTIB)',
 };
 
 // Action history labels
@@ -230,7 +231,7 @@ export const getFileTypeMeta = (filename?: string): FileTypeMeta => {
     return {
       ext,
       badgeBg: 'bg-slate-100 dark:bg-purple-500/10',
-      badgeText: 'text-slate-700 dark:text-purple-400',
+      badgeText: 'text-slate-700 dark:purple-400',
       badgeBorder: 'border-slate-300 dark:border-purple-500/25',
       iconBg: 'bg-slate-200 dark:bg-purple-500/15',
       iconText: 'text-slate-700 dark:text-purple-400',
@@ -289,11 +290,13 @@ export const PERMISSION_ITEMS: PermissionItem[] = [
 ];
 
 export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  ADMIN: ['DOC_CREATE', 'DOC_APPROVE', 'DOC_EXECUTE', 'REPORTS_VIEW', 'USERS_MANAGE', 'DOC_DELETE'],
-  INITIATOR: ['DOC_CREATE', 'DOC_EXECUTE'],
+  ADMIN: ['DOC_CREATE', 'DOC_APPROVE', 'DOC_EXECUTE', 'REPORTS_VIEW', 'USERS_MANAGE', 'DOC_DELETE', 'INCOMING_MANAGE', 'TEMPLATES_MANAGE'],
+  INITIATOR: ['DOC_CREATE', 'DOC_EXECUTE', 'TEMPLATES_MANAGE'],
   APPROVER: ['DOC_APPROVE', 'DOC_EXECUTE'],
   EXECUTOR: ['DOC_EXECUTE'],
+  SECRETARY: ['DOC_CREATE', 'DOC_EXECUTE', 'INCOMING_MANAGE', 'TEMPLATES_MANAGE'],
 };
+
 
 export const hasPermission = (user: User | null | undefined, perm: Permission): boolean => {
   if (!user) return false;

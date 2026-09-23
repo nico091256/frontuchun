@@ -59,6 +59,21 @@ export default function Sidebar() {
   };
 
   const filteredNavItems = navItems.filter((item) => {
+    if (item.href === '/dashboard/incoming-emails') {
+      return (
+        user?.role === 'ADMIN' ||
+        user?.role === 'SECRETARY' ||
+        hasPermission(user, 'INCOMING_MANAGE')
+      );
+    }
+    if (item.href === '/dashboard/templates') {
+      return (
+        user?.role === 'ADMIN' ||
+        user?.role === 'INITIATOR' ||
+        user?.role === 'SECRETARY' ||
+        hasPermission(user, 'TEMPLATES_MANAGE')
+      );
+    }
     if (item.href === '/dashboard/admin/users') {
       return user?.role === 'ADMIN' || hasPermission(user, 'USERS_MANAGE');
     }
@@ -67,6 +82,7 @@ export default function Sidebar() {
     }
     return !item.roles || (user?.role && item.roles.includes(user.role));
   });
+
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';

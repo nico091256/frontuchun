@@ -16,7 +16,9 @@ const roleColors: Record<Role, { bg: string; color: string; border: string }> = 
   INITIATOR:{ bg: 'bg-blue-500/10',   color: 'text-blue-400',   border: 'border-blue-500/20' },
   APPROVER: { bg: 'bg-emerald-500/10',color: 'text-emerald-400',border: 'border-emerald-500/20' },
   EXECUTOR: { bg: 'bg-amber-500/10',  color: 'text-amber-400',  border: 'border-amber-500/20' },
+  SECRETARY:{ bg: 'bg-sky-500/10',    color: 'text-sky-400',    border: 'border-sky-500/20' },
 };
+
 
 interface CreateUserForm {
   fullName: string; email: string; password: string;
