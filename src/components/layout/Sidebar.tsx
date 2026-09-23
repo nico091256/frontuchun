@@ -15,6 +15,7 @@ import {
   ClipboardList,
   TrendingUp,
   Trophy,
+  Bookmark,
 } from 'lucide-react';
 import { cn, roleLabels, hasPermission } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -32,6 +33,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Bosh sahifa', icon: LayoutDashboard, roles: ['ADMIN'] },
   { href: '/dashboard/documents', label: 'Hujjatlar', icon: FileText },
+  { href: '/dashboard/templates', label: 'Hujjat shablonlari', icon: Bookmark },
   { href: '/dashboard/approvals', label: 'Tasdiqlashlar', icon: CheckSquare },
   { href: '/dashboard/admin/users', label: 'Foydalanuvchilar', icon: Users, roles: ['ADMIN'] },
   { href: '/dashboard/admin/audit-log', label: 'Faoliyat logi', icon: ClipboardList, roles: ['ADMIN'] },
@@ -79,7 +81,7 @@ export default function Sidebar() {
       )}
 
       <aside className={cn(
-        "sidebar fixed md:static inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0",
+        "sidebar fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Discover Invest Official Logo */}

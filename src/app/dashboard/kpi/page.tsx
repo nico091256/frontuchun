@@ -89,10 +89,8 @@ export default function KpiPage() {
     );
   }
 
-  // Umumiy samaradorlik = 3 ko'rsatkichning o'rtacha
-  const overallRate = Math.round(
-    (kpi.creator.successRate + kpi.approver.onTimeRate + kpi.executor.onTimeRate) / 3
-  );
+  // Umumiy samaradorlik = Tasdiqlovchi va Ijrochi o'rtacha ko'rsatkichi
+  const overallRate = kpi.overallRate ?? 100;
   const overallColor = overallRate >= 80 ? COLORS.green : overallRate >= 60 ? COLORS.amber : COLORS.rose;
 
   const getRatingLabel = (rate: number) => {
@@ -151,77 +149,31 @@ export default function KpiPage() {
             <p className="text-4xl font-black mb-2" style={{ color: overallColor }}>{overallRate}%</p>
             <p className="text-sm font-semibold" style={{ color: overallColor }}>{overall.label}</p>
             <p className="text-xs text-[rgb(var(--text-muted))] mt-2">
-              Tashabbuskor, Tasdiqlovchi va Ijrochi rollaridagi o&apos;rtacha ko&apos;rsatkich
+              Tasdiqlovchi va Ijrochi rollaridagi o&apos;rtacha ko&apos;rsatkich
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4 text-center w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-[rgb(var(--border))]">
             {[
-              { label: 'Tashabbuskor', rate: kpi.creator.successRate, color: COLORS.violet, icon: FileText },
               { label: 'Tasdiqlovchi', rate: kpi.approver.onTimeRate, color: COLORS.sky, icon: ShieldCheck },
               { label: 'Ijrochi', rate: kpi.executor.onTimeRate, color: COLORS.green, icon: Zap },
             ].map(({ label, rate, color, icon: Icon }) => (
-              <div key={label} className="flex flex-col items-center gap-1">
+              <div key={label} className="flex flex-col items-center gap-1 p-1">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center"
                   style={{ background: `${color}15` }}
                 >
                   <Icon size={18} style={{ color }} />
                 </div>
-                <span className="text-lg font-bold" style={{ color }}>{rate}%</span>
-                <span className="text-xs text-[rgb(var(--text-muted))]">{label}</span>
+                <span className="text-base sm:text-lg font-bold" style={{ color }}>{rate}%</span>
+                <span className="text-[11px] sm:text-xs text-[rgb(var(--text-muted))] whitespace-nowrap">{label}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* 3 ta asosiy karta */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-        {/* 1. Tashabbuskor (Creator) */}
-        <div className="glass-card p-5 space-y-4" style={{ borderColor: `${COLORS.violet}25` }}>
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${COLORS.violet}15` }}>
-              <FileText size={18} style={{ color: COLORS.violet }} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[rgb(var(--text-primary))]">Tashabbuskor</p>
-              <p className="text-xs text-[rgb(var(--text-muted))]">Hujjat yaratish sifati</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <KpiDonut rate={kpi.creator.successRate} color={COLORS.violet} size={90} />
-            <div className="space-y-2 flex-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-[rgb(var(--text-muted))]">Jami yaratilgan</span>
-                <span className="font-bold text-[rgb(var(--text-primary))]">{kpi.creator.totalCreated}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-[rgb(var(--text-muted))]">Rad etilgan</span>
-                <span className="font-bold" style={{ color: COLORS.rose }}>{kpi.creator.totalRejected}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-[rgb(var(--text-muted))]">Muvaffaqiyatli</span>
-                <span className="font-bold" style={{ color: COLORS.green }}>
-                  {kpi.creator.totalCreated - kpi.creator.totalRejected}
-                </span>
-              </div>
-            </div>
-          </div>
-          {/* Progress bar */}
-          <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-[rgb(var(--text-muted))]">Muvaffaqiyat darajasi</span>
-              <span className="font-semibold" style={{ color: COLORS.violet }}>{kpi.creator.successRate}%</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${kpi.creator.successRate}%`, background: COLORS.violet }}
-              />
-            </div>
-          </div>
-        </div>
+      {/* 2 ta asosiy karta */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
         {/* 2. Tasdiqlovchi (Approver) */}
         <div className="glass-card p-5 space-y-4" style={{ borderColor: `${COLORS.sky}25` }}>

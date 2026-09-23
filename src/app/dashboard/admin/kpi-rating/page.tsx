@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useState, useMemo } from 'react';
 import api from '@/lib/api';
 import { UserKpiEntry } from '@/types';
@@ -6,8 +6,9 @@ import { roleLabels } from '@/lib/utils';
 import {
   TrendingUp, Users, Trophy, Search, X,
   FileText, ShieldCheck, Zap, Award, ChevronUp, ChevronDown,
-  CheckCircle2, XCircle, Clock, Target, Medal,
+  CheckCircle2, XCircle, Clock, Target, Medal, FileSpreadsheet, Printer,
 } from 'lucide-react';
+import { exportToExcel, exportToPDF } from '@/lib/exportUtils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = {
@@ -198,12 +199,11 @@ function KpiDetailModal({ entry, onClose }: { entry: UserKpiEntry; onClose: () =
                 <Award size={12} />{rating.full}
               </div>
               <p className="text-xs text-[rgb(var(--text-muted))] mt-2">
-                Tashabbuskor, Tasdiqlovchi va Ijrochi rollaridagi o&apos;rtacha ko&apos;rsatkich
+                Tasdiqlovchi va Ijrochi rollaridagi o&apos;rtacha ko&apos;rsatkich
               </p>
             </div>
             <div className="flex sm:flex-col gap-3 sm:gap-2">
               {[
-                { label: 'Tashabbuskor', rate: kpi.creator.successRate,  color: COLORS.violet, icon: FileText   },
                 { label: 'Tasdiqlovchi', rate: kpi.approver.onTimeRate,  color: COLORS.sky,    icon: ShieldCheck },
                 { label: 'Ijrochi',      rate: kpi.executor.onTimeRate,  color: COLORS.green,  icon: Zap         },
               ].map(({ label, rate: r, color, icon: Icon }) => (
@@ -218,16 +218,7 @@ function KpiDetailModal({ entry, onClose }: { entry: UserKpiEntry; onClose: () =
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6">
-          <KpiDetailCard
-            title="Tashabbuskor" subtitle="Hujjat yaratish sifati"
-            rate={kpi.creator.successRate} color={COLORS.violet} icon={FileText}
-            rows={[
-              { label: 'Jami yaratilgan', value: kpi.creator.totalCreated, valueColor: undefined },
-              { label: 'Rad etilgan', value: kpi.creator.totalRejected, valueColor: COLORS.rose },
-              { label: 'Muvaffaqiyatli', value: kpi.creator.totalCreated - kpi.creator.totalRejected, valueColor: COLORS.green },
-            ]}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6">
           <KpiDetailCard
             title="Tasdiqlovchi" subtitle="Vaqtida tasdiqlash"
             rate={kpi.approver.onTimeRate} color={COLORS.sky} icon={ShieldCheck}
@@ -333,8 +324,45 @@ export default function AdminKpiRatingPage() {
             Barcha xodimlarning samaradorlik ko&apos;rsatkichlari — real vaqtda
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-medium text-[rgb(var(--text-muted))]">
-          <Users size={14} />{entries.length} nafar xodim
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const columns = [
+                { header: 'Xodim', key: (e: any) => e.user.fullName },
+                { header: 'Lavozim', key: (e: any) => e.user.position || e.user.role },
+                { header: 'Bo\'lim', key: (e: any) => e.user.department || '' },
+                { header: 'Umumiy KPI', key: (e: any) => `${e.kpi.overallRate}%` },
+                { header: 'Tasdiqlash KPI', key: (e: any) => `${e.kpi.approver.onTimeRate}%` },
+                { header: 'Ijro KPI', key: (e: any) => `${e.kpi.executor.onTimeRate}%` },
+                { header: 'Baho', key: (e: any) => getRatingLabel(e.kpi.overallRate).label },
+              ];
+              exportToExcel('Xodimlar_KPI_Reytingi', columns, entries);
+            }}
+            className="px-3 py-2 rounded-xl border border-emerald-500/30 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all flex items-center gap-1.5"
+          >
+            <FileSpreadsheet size={14} />
+            <span>Excel</span>
+          </button>
+          <button
+            onClick={() => {
+              const columns = [
+                { header: 'Xodim', key: (e: any) => e.user.fullName },
+                { header: 'Bo\'lim', key: (e: any) => e.user.department || '' },
+                { header: 'Umumiy KPI', key: (e: any) => `${e.kpi.overallRate}%` },
+                { header: 'Tasdiqlash', key: (e: any) => `${e.kpi.approver.onTimeRate}%` },
+                { header: 'Ijro', key: (e: any) => `${e.kpi.executor.onTimeRate}%` },
+                { header: 'Baho', key: (e: any) => getRatingLabel(e.kpi.overallRate).label },
+              ];
+              exportToPDF('Xodimlar KPI Reytingi Hisoboti', columns, entries);
+            }}
+            className="px-3 py-2 rounded-xl border border-violet-500/30 text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-all flex items-center gap-1.5"
+          >
+            <Printer size={14} />
+            <span>PDF</span>
+          </button>
+          <div className="flex items-center gap-2 text-xs font-medium text-[rgb(var(--text-muted))] ml-2">
+            <Users size={14} />{entries.length} nafar xodim
+          </div>
         </div>
       </div>
 
@@ -416,11 +444,6 @@ export default function AdminKpiRatingPage() {
                     onClick={() => handleSort('overall')}>
                   <span className="flex items-center justify-center gap-1">Umumiy <SortIcon k="overall" /></span>
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider cursor-pointer hover:text-violet-400 transition-colors hidden md:table-cell"
-                    style={{ color: sortKey === 'creator' ? COLORS.violet : 'rgb(var(--text-muted))' }}
-                    onClick={() => handleSort('creator')}>
-                  <span className="flex items-center justify-center gap-1">Tashabbuskor <SortIcon k="creator" /></span>
-                </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider cursor-pointer hover:text-sky-400 transition-colors hidden md:table-cell"
                     style={{ color: sortKey === 'approver' ? COLORS.sky : 'rgb(var(--text-muted))' }}
                     onClick={() => handleSort('approver')}>
@@ -438,7 +461,7 @@ export default function AdminKpiRatingPage() {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-[rgb(var(--text-muted))] text-sm">
+                  <td colSpan={7} className="px-4 py-12 text-center text-[rgb(var(--text-muted))] text-sm">
                     Xodimlar topilmadi
                   </td>
                 </tr>
@@ -477,9 +500,6 @@ export default function AdminKpiRatingPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center hidden md:table-cell">
-                      <span className="text-xs font-bold" style={{ color: COLORS.violet }}>{entry.kpi.creator.successRate}%</span>
-                    </td>
-                    <td className="px-4 py-3 text-center hidden md:table-cell">
                       <span className="text-xs font-bold" style={{ color: COLORS.sky }}>{entry.kpi.approver.onTimeRate}%</span>
                     </td>
                     <td className="px-4 py-3 text-center hidden md:table-cell">
@@ -514,7 +534,7 @@ export default function AdminKpiRatingPage() {
         <p className="text-xs text-[rgb(var(--text-secondary))]">
           <span className="font-semibold" style={{ color: COLORS.amber }}>Eslatma:</span>{' '}
           KPI ko&apos;rsatkichlari haqiqiy ish kunlari bo&apos;yicha hisoblanadi. Umumiy baho —
-          Tashabbuskor, Tasdiqlovchi va Ijrochi rollaridagi o&apos;rtacha ko&apos;rsatkich.
+          Tasdiqlovchi va Ijrochi rollaridagi o&apos;rtacha ko&apos;rsatkich.
           Jadvalni saralash uchun ustun sarlavhasiga bosing.
         </p>
       </div>

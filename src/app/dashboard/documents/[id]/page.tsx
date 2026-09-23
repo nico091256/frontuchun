@@ -9,7 +9,7 @@ import {
   ArrowLeft, FileText, Download, Send, CheckCircle, XCircle,
   Clock, User, Calendar, AlertTriangle, MessageSquare, Upload, Zap,
   Paperclip, FileSpreadsheet, FileImage, CheckCircle2, RotateCcw, Trash2,
-  Building2, Reply, Link as LinkIcon, FolderDown,
+  Building2, Reply, Link as LinkIcon, FolderDown, Eye, EyeOff,
 } from 'lucide-react';
 import {
   statusConfig, priorityConfig, stepStatusConfig, docTypeConfig,
@@ -1047,12 +1047,29 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
               </div>
 
               {document.executor && (
-                <div className="flex items-center gap-2 text-sm mt-3 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
-                  <User size={14} className="text-slate-400 shrink-0" />
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Mas'ul ijrochi</p>
-                    <p onClick={() => setProfileTargetId(document.executorId!)} className="text-slate-900 dark:text-white font-medium cursor-pointer hover:underline hover:text-amber-600 dark:hover:text-amber-400 transition-colors">{document.executor.fullName}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{document.executor.department || 'Bo\'limsiz'}</p>
+                <div className="flex flex-col gap-2 text-sm mt-3 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2">
+                    <User size={14} className="text-slate-400 shrink-0" />
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Mas'ul ijrochi</p>
+                      <p onClick={() => setProfileTargetId(document.executorId!)} className="text-slate-900 dark:text-white font-medium cursor-pointer hover:underline hover:text-amber-600 dark:hover:text-amber-400 transition-colors">{document.executor.fullName}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{document.executor.department || 'Bo\'limsiz'}</p>
+                    </div>
+                  </div>
+
+                  {/* Ijrochi qachon ko'rgani haqida ma'lumot (Nazorat uchun) */}
+                  <div className="pl-6 mt-0.5">
+                    {document.executorViewedAt ? (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25">
+                        <Eye size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>Ochib ko'rilgan: {formatDateTime(document.executorViewedAt)}</span>
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/25">
+                        <EyeOff size={13} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                        <span>Hali ochib ko'rilmagan</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

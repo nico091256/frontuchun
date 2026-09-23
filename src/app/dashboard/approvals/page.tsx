@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { ApprovalStep, Document } from '@/types';
-import { CheckCircle2, Clock, ArrowRight, FileText, Shield, PlayCircle, UserCheck, CheckCheck } from 'lucide-react';
+import { Document, ApprovalStep } from '@/types';
+import { CheckCircle2, Clock, ArrowRight, FileText, Shield, PlayCircle, UserCheck, CheckCheck, CheckSquare, Square, FileSpreadsheet, Printer } from 'lucide-react';
 import { formatDate, priorityConfig, statusConfig } from '@/lib/utils';
+import { exportToExcel, exportToPDF } from '@/lib/exportUtils';
+import { BulkActionBar } from '@/components/common/BulkActionBar';
 
 type TabType = 'in_approval' | 'approved' | 'in_execution' | 'completed';
 
@@ -18,6 +20,10 @@ export default function ApprovalsPage() {
   const [inExecutionDocs, setInExecutionDocs] = useState<Document[]>([]);
   const [completedDocs, setCompletedDocs] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Selection & Bulk Action state
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkApproveLoading, setBulkApproveLoading] = useState(false);
 
   // Tab holatini URL yoki sessionStorage dan olish
   const [tab, setTab] = useState<TabType>(() => {
@@ -34,12 +40,96 @@ export default function ApprovalsPage() {
 
   const changeTab = (newTab: TabType) => {
     setTab(newTab);
+    setSelectedIds([]);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('approvals_active_tab', newTab);
       const url = new URL(window.location.href);
       url.searchParams.set('tab', newTab);
       window.history.replaceState({}, '', url.toString());
     }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = (docs: any[]) => {
+    if (selectedIds.length === docs.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(docs.map(d => d.id));
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.length === 0) return;
+    const confirmApprove = window.confirm(`Siz rostdan ham tanlangan ${selectedIds.length} ta hujjatni ommaviy tasdiqlamoqchimisiz?`);
+    if (!confirmApprove) return;
+
+    setBulkApproveLoading(true);
+    try {
+      const stepIdsToApprove: number[] = [];
+      inApprovalDocs.forEach(d => {
+        if (selectedIds.includes(d.id)) {
+          const pStep = d.approvalSteps?.find((s: any) => s.stepStatus === 'PENDING' && (isAdmin || s.approverId === user?.id));
+          if (pStep) stepIdsToApprove.push(pStep.id);
+        }
+      });
+
+      if (stepIdsToApprove.length === 0) {
+        alert("Siz tasdiqlashingiz kerak bo'lgan kutilayotgan bosqichlar topilmadi");
+        return;
+      }
+
+      await api.post('/approvals/bulk-approve', { stepIds: stepIdsToApprove, comment: 'Ommaviy tasdiqlandi' });
+      alert(`${stepIdsToApprove.length} ta hujjat muvaffaqiyatli tasdiqlandi!`);
+      setSelectedIds([]);
+      const res = await api.get('/approvals/tabs');
+      setInApprovalDocs(res.data.data.inApproval || []);
+      setApprovedDocs(res.data.data.approved || []);
+      setInExecutionDocs(res.data.data.inExecution || []);
+      setCompletedDocs(res.data.data.completed || []);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Ommaviy tasdiqlashda xatolik");
+    } finally {
+      setBulkApproveLoading(false);
+    }
+  };
+
+  const handleExportExcel = (docs: any[]) => {
+    const docsToExport = selectedIds.length > 0
+      ? docs.filter(d => selectedIds.includes(d.id))
+      : docs;
+
+    const columns = [
+      { header: 'Hujjat №', key: (d: any) => d.docNumber },
+      { header: 'Hujjat Nomi', key: (d: any) => d.title },
+      { header: 'Holati', key: (d: any) => statusConfig[d.status as keyof typeof statusConfig]?.label || d.status },
+      { header: 'Ustuvorlik', key: (d: any) => priorityConfig[d.priority as keyof typeof priorityConfig]?.label || d.priority },
+      { header: 'Yaratuvchi', key: (d: any) => d.creator?.fullName || '' },
+      { header: 'Bo\'lim', key: (d: any) => d.creator?.department || '' },
+      { header: 'Ijrochi', key: (d: any) => d.executor?.fullName || '' },
+      { header: 'Yaratilgan Sana', key: (d: any) => formatDate(d.createdAt) },
+    ];
+
+    exportToExcel(`Tasdiqlashlar_${tab}`, columns, docsToExport);
+  };
+
+  const handleExportPDF = (docs: any[]) => {
+    const docsToExport = selectedIds.length > 0
+      ? docs.filter(d => selectedIds.includes(d.id))
+      : docs;
+
+    const columns = [
+      { header: 'Hujjat №', key: (d: any) => d.docNumber },
+      { header: 'Hujjat Nomi', key: (d: any) => d.title },
+      { header: 'Holati', key: (d: any) => statusConfig[d.status as keyof typeof statusConfig]?.label || d.status },
+      { header: 'Yaratuvchi', key: (d: any) => d.creator?.fullName || '' },
+      { header: 'Ijrochi', key: (d: any) => d.executor?.fullName || '' },
+      { header: 'Sana', key: (d: any) => formatDate(d.createdAt) },
+    ];
+
+    exportToPDF('Tasdiqlashlar Hisoboti', columns, docsToExport);
   };
 
   useEffect(() => {
@@ -159,8 +249,8 @@ export default function ApprovalsPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="overflow-x-auto pb-1">
+      {/* Tabs & Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 overflow-x-auto pb-1">
         <div className="flex gap-1.5 p-1.5 rounded-xl w-max sm:w-fit border border-[rgb(var(--border))]" style={{ background: 'rgb(var(--bg-elevated))' }}>
           {tabsConfig.map((t) => {
             const Icon = t.icon;
@@ -176,8 +266,8 @@ export default function ApprovalsPage() {
                   border: isActive ? '1px solid rgba(217, 119, 6, 0.35)' : '1px solid transparent',
                 }}
               >
-                <Icon size={14} />
-                <span className="hidden xs:inline sm:inline">{t.label}</span>
+                <Icon size={14} className="shrink-0" />
+                <span className="inline-block">{t.label}</span>
                 <span
                   className="px-1.5 py-0.5 rounded-full text-xs font-semibold"
                   style={{
@@ -191,10 +281,40 @@ export default function ApprovalsPage() {
             );
           })}
         </div>
+
+        {/* Export & Select All Bar */}
+        {currentDocs.length > 0 && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => toggleSelectAll(currentDocs)}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-1.5"
+            >
+              {selectedIds.length === currentDocs.length ? <CheckSquare size={14} className="text-amber-500" /> : <Square size={14} />}
+              <span>{selectedIds.length === currentDocs.length ? 'Tanlovni bekor qilish' : 'Barchasini tanlash'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleExportExcel(currentDocs)}
+              className="px-3 py-1.5 rounded-xl border border-emerald-500/30 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all flex items-center gap-1.5"
+            >
+              <FileSpreadsheet size={14} />
+              <span>Excel</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleExportPDF(currentDocs)}
+              className="px-3 py-1.5 rounded-xl border border-violet-500/30 text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-all flex items-center gap-1.5"
+            >
+              <Printer size={14} />
+              <span>PDF</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Documents List */}
-      <div className="space-y-3">
+      <div className="space-y-3 relative">
         {currentDocs.length === 0 ? (
           <div className="glass-card p-12 text-center" style={{ color: 'rgb(var(--text-muted))' }}>
             <FileText size={42} className="mx-auto mb-3 opacity-30 text-slate-400" />
@@ -217,19 +337,38 @@ export default function ApprovalsPage() {
           currentDocs.map((doc) => {
             const pc = doc.priority ? priorityConfig[doc.priority as keyof typeof priorityConfig] : priorityConfig.NORMAL;
             const sc = statusConfig[doc.status as keyof typeof statusConfig];
-            const currentPending = doc.approvalSteps?.find((s: ApprovalStep) => s.stepStatus === 'PENDING');
+            const currentPending = doc.approvalSteps?.find((s: any) => s.stepStatus === 'PENDING');
             const isMyTurn = currentPending?.approverId === user?.id;
             const isMyExecution = doc.executorId === user?.id;
+            const isSelected = selectedIds.includes(doc.id);
 
             return (
-              <Link
+              <div
                 key={doc.id}
-                href={`/dashboard/documents/${doc.id}`}
-                className="glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 group transition-all hover:border-amber-500/30"
+                className={`glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 group transition-all hover:border-amber-500/30 ${
+                  isSelected ? 'border-amber-500/60 bg-amber-500/[0.04]' : ''
+                }`}
               >
+                {/* Checkbox button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelect(doc.id);
+                  }}
+                  className="p-1 rounded-lg text-slate-400 hover:text-amber-500 transition-colors shrink-0"
+                >
+                  {isSelected ? (
+                    <CheckSquare size={20} className="text-amber-500" />
+                  ) : (
+                    <Square size={20} className="text-slate-400 dark:text-slate-600" />
+                  )}
+                </button>
+
                 {/* Icon box based on tab */}
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                <Link
+                  href={`/dashboard/documents/${doc.id}`}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
                     background:
                       tab === 'approved'
@@ -263,7 +402,7 @@ export default function ApprovalsPage() {
                           : 'rgb(251 191 36)',
                     }}
                   />
-                </div>
+                </Link>
 
                 {/* Main details */}
                 <div className="flex-1 min-w-0">
@@ -378,11 +517,25 @@ export default function ApprovalsPage() {
                   size={16}
                   className="hidden sm:block flex-shrink-0 text-[rgb(var(--text-muted))] group-hover:translate-x-1 group-hover:text-[rgb(var(--primary))] transition-all"
                 />
-              </Link>
+              </div>
             );
           })
         )}
       </div>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedIds.length}
+        totalCount={currentDocs.length}
+        onClear={() => setSelectedIds([])}
+        onSelectAll={() => toggleSelectAll(currentDocs)}
+        isAllSelected={selectedIds.length === currentDocs.length && currentDocs.length > 0}
+        onBulkApprove={tab === 'in_approval' ? handleBulkApprove : undefined}
+        onExportExcel={() => handleExportExcel(currentDocs)}
+        onExportPDF={() => handleExportPDF(currentDocs)}
+        approveLoading={bulkApproveLoading}
+        approveLabel="Barchasini tasdiqlash"
+      />
     </div>
   );
 }

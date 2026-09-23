@@ -55,12 +55,12 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen max-w-full overflow-x-hidden">
       {showSplash && <DiscoverSplash onFinish={handleSplashDone} minDuration={1300} />}
       <Sidebar />
-      <div className="main-content flex-1 flex flex-col">
+      <div className="main-content flex-1 flex flex-col min-w-0">
         <Navbar />
-        <main className="flex-1 page-content">{children}</main>
+        <main className="flex-1 page-content min-w-0">{children}</main>
       </div>
     </div>
   );

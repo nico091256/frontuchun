@@ -8,6 +8,8 @@ import {
   Zap, Upload, Trash2, AlertTriangle, RotateCcw, Eye,
 } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
+import { exportToExcel, exportToPDF } from '@/lib/exportUtils';
+import { FileSpreadsheet, Printer } from 'lucide-react';
 import Link from 'next/link';
 
 interface AuditLog {
@@ -52,6 +54,7 @@ const ACTION_META: Record<string, { label: string; color: string; bg: string; bo
   FILE_UPLOADED:     { label: "Fayl yuklandi",     color: "text-blue-600 dark:text-blue-400",    bg: "bg-blue-50 dark:bg-blue-500/10",     border: "border-blue-200 dark:border-blue-500/25",    icon: Upload },
   FILE_ATTACHED:     { label: "Fayl biriktirildi", color: "text-blue-600 dark:text-blue-400",    bg: "bg-blue-50 dark:bg-blue-500/10",     border: "border-blue-200 dark:border-blue-500/25",    icon: Upload },
   FILE_VIEWED:       { label: "Fayl ko'rildi",     color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-500/10", border: "border-violet-200 dark:border-violet-500/25", icon: Eye },
+  EXECUTOR_VIEWED:   { label: "Ijrochi ko'rib chiqdi", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-500/10", border: "border-cyan-200 dark:border-cyan-500/25", icon: Eye },
   FILE_DELETED:      { label: "Fayl o'chirildi",   color: "text-red-600 dark:text-red-400",      bg: "bg-red-50 dark:bg-red-500/10",       border: "border-red-200 dark:border-red-500/25",      icon: Trash2 },
   DEADLINE_EXTENDED: { label: "Muddat uzaytirildi", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10",   border: "border-amber-200 dark:border-amber-500/25",  icon: Clock },
   STEP_DEADLINE_EXTENDED: { label: "Bosqich muddati uzaytirildi", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", border: "border-amber-200 dark:border-amber-500/25", icon: Clock },
@@ -85,7 +88,7 @@ export default function AuditLogPage() {
   // Filters
   const [search, setSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [selectedAction, setSelectedAction] = useState('');
+  const [selectedAction, setSelectedAction] = useState('EXECUTOR_VIEWED');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [availableActions, setAvailableActions] = useState<{ action: string; count: number }[]>([]);
@@ -146,13 +149,49 @@ export default function AuditLogPage() {
             Tizimda amalga oshirilgan barcha harakatlar — {total} ta yozuv
           </p>
         </div>
-        <button
-          onClick={fetchLogs}
-          className="btn-ghost text-sm py-2 px-3 flex items-center gap-1.5"
-        >
-          <RefreshCw size={14} />
-          Yangilash
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const columns = [
+                { header: 'ID', key: (l: any) => l.id },
+                { header: 'Amal', key: (l: any) => getActionMeta(l.actionName)?.label || l.actionName },
+                { header: 'Tavsifi', key: (l: any) => l.description || '' },
+                { header: 'Xodim', key: (l: any) => l.performedBy?.fullName || 'Tizim' },
+                { header: 'Bo\'lim', key: (l: any) => l.performedBy?.department || '' },
+                { header: 'Hujjat №', key: (l: any) => l.document?.docNumber || '' },
+                { header: 'Sana', key: (l: any) => formatDateTime(l.createdAt) },
+              ];
+              exportToExcel('Audit_Log', columns, logs);
+            }}
+            className="px-3 py-2 rounded-xl border border-emerald-500/30 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all flex items-center gap-1.5"
+          >
+            <FileSpreadsheet size={14} />
+            <span>Excel</span>
+          </button>
+          <button
+            onClick={() => {
+              const columns = [
+                { header: 'Amal', key: (l: any) => getActionMeta(l.actionName)?.label || l.actionName },
+                { header: 'Tavsifi', key: (l: any) => l.description || '' },
+                { header: 'Xodim', key: (l: any) => l.performedBy?.fullName || 'Tizim' },
+                { header: 'Hujjat №', key: (l: any) => l.document?.docNumber || '' },
+                { header: 'Sana', key: (l: any) => formatDateTime(l.createdAt) },
+              ];
+              exportToPDF('Faoliyat Logi Hisoboti', columns, logs);
+            }}
+            className="px-3 py-2 rounded-xl border border-violet-500/30 text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-all flex items-center gap-1.5"
+          >
+            <Printer size={14} />
+            <span>PDF</span>
+          </button>
+          <button
+            onClick={fetchLogs}
+            className="btn-ghost text-sm py-2 px-3 flex items-center gap-1.5"
+          >
+            <RefreshCw size={14} />
+            Yangilash
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -166,7 +205,7 @@ export default function AuditLogPage() {
               placeholder="Amal tavsifi, hujjat yoki xodim bo'yicha..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="input-field pl-8 text-sm py-2 w-full"
+              className="input-field !pl-10 text-sm py-2 w-full"
             />
           </div>
 
@@ -188,8 +227,10 @@ export default function AuditLogPage() {
             onChange={(e) => { setSelectedAction(e.target.value); setPage(1); }}
             className="select-field text-sm py-2"
           >
-            <option value="">Barcha amallar</option>
-            {availableActions.map(a => {
+            <option value="EXECUTOR_VIEWED">👁️ Mas'ul ijrochi ko'rgani</option>
+            <option value="">Faqat ko'rish amallari (Ijrochi + Fayl)</option>
+            <option value="ALL">Barcha amallar</option>
+            {availableActions.filter(a => a.action !== 'EXECUTOR_VIEWED').map(a => {
               const meta = getActionMeta(a.action);
               return <option key={a.action} value={a.action}>{meta.label} ({a.count})</option>;
             })}

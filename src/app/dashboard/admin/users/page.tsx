@@ -254,7 +254,7 @@ export default function AdminUsersPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Xodim ismi, email, bo'lim yoki lavozim bo'yicha qidiruv..."
-            className="input-field w-full pl-9 py-2 text-sm"
+            className="input-field w-full !pl-10 !pr-9 py-2 text-sm"
           />
           {searchQuery && (
             <button

@@ -11,6 +11,7 @@ import io from 'socket.io-client';
 import toast from 'react-hot-toast';
 import DiscoverLogo from '@/components/common/DiscoverLogo';
 import ThemeToggle from '@/components/common/ThemeToggle';
+import Portal from '@/components/common/Portal';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
 
@@ -21,7 +22,10 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const panelRef = useRef<HTMLDivElement>(null);
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
+
+  const [panelCoords, setPanelCoords] = useState<{ top: number; right?: number; left?: number; width: number; maxHeight: number }>({ top: 0, width: 380, maxHeight: 450 });
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -36,6 +40,54 @@ export default function Navbar() {
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
+
+  // Position calculation for Portal dropdown
+  useEffect(() => {
+    if (!showNotifications || !bellButtonRef.current) return;
+    const updatePosition = () => {
+      if (!bellButtonRef.current) return;
+      const rect = bellButtonRef.current.getBoundingClientRect();
+      const isMobile = window.innerWidth < 640;
+      if (isMobile) {
+        setPanelCoords({
+          top: rect.bottom + 8,
+          left: 12,
+          width: window.innerWidth - 24,
+          maxHeight: Math.max(200, window.innerHeight - rect.bottom - 24),
+        });
+      } else {
+        setPanelCoords({
+          top: rect.bottom + 8,
+          right: Math.max(16, window.innerWidth - rect.right),
+          width: 380,
+          maxHeight: Math.max(200, window.innerHeight - rect.bottom - 24),
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [showNotifications]);
+
+  // Click outside handler
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        panelRef.current && !panelRef.current.contains(target) &&
+        bellButtonRef.current && !bellButtonRef.current.contains(target)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // Socket.io
   useEffect(() => {
@@ -123,8 +175,9 @@ export default function Navbar() {
         <ThemeToggle />
 
         {/* Notification Bell */}
-        <div className="relative" ref={panelRef}>
+        <div className="relative">
           <button
+            ref={bellButtonRef}
             onClick={() => {
               const next = !showNotifications;
               setShowNotifications(next);
@@ -147,106 +200,123 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Notification Panel */}
+          {/* Notification Panel Portal */}
           {showNotifications && (
-            <div
-              className="notification-panel absolute right-0 top-full mt-2 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in"
-              style={{
-                background: 'rgb(var(--bg-surface))',
-                border: '1px solid rgb(var(--border))',
-                boxShadow: 'var(--card-shadow-hover)',
-              }}
-            >
-              {/* Header */}
+            <Portal>
               <div
-                className="flex items-center justify-between p-4"
-                style={{ borderBottom: '1px solid rgb(var(--border))' }}
+                ref={panelRef}
+                className="fixed rounded-2xl shadow-2xl overflow-hidden z-[99999] animate-fade-in"
+                style={{
+                  top: `${panelCoords.top}px`,
+                  ...(panelCoords.left !== undefined ? { left: `${panelCoords.left}px` } : {}),
+                  ...(panelCoords.right !== undefined ? { right: `${panelCoords.right}px` } : {}),
+                  width: `${panelCoords.width}px`,
+                  maxHeight: `${panelCoords.maxHeight}px`,
+                  background: 'rgb(var(--bg-surface))',
+                  border: '1px solid rgb(var(--border))',
+                  boxShadow: 'var(--card-shadow-hover)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
               >
-                <div>
-                  <span className="font-semibold text-sm" style={{ color: 'rgb(var(--text-primary))' }}>Bildirishnomalar</span>
-                  {unreadCount > 0 && (
-                    <span
-                      className="ml-2 badge"
-                      style={{
-                        background: 'rgba(217, 119, 6, 0.12)',
-                        color: '#D97706',
-                        border: '1px solid rgba(217, 119, 6, 0.25)',
-                      }}
-                    >
-                      {unreadCount} yangi
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-xs flex items-center gap-1 font-medium hover:underline text-[rgb(var(--primary))]"
-                    >
-                      <CheckCheck size={13} />
-                      Barchasini o'qi
-                    </button>
-                  )}
-                  {notifications.length > 0 && (
-                    <button
-                      onClick={clearAllNotifications}
-                      className="text-xs font-medium text-[rgb(var(--text-muted))] hover:text-rose-500 transition-colors"
-                      title="Barcha bildirishnomalarni tozalash"
-                    >
-                      Tozalash
-                    </button>
-                  )}
-                  <button onClick={() => setShowNotifications(false)} className="p-1 rounded hover:bg-[rgb(var(--bg-elevated))] transition-colors">
-                    <X size={16} className="text-[rgb(var(--text-muted))]" />
-                  </button>
-                </div>
-              </div>
-
-              {/* List */}
-              <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
-                {notifications.length === 0 ? (
-                  <div className="text-center py-10" style={{ color: 'rgb(var(--text-muted))' }}>
-                    <Bell size={28} className="mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">Bildirishnomalar yo'q</p>
+                {/* Header */}
+                <div
+                  className="flex items-center justify-between p-4 shrink-0"
+                  style={{ borderBottom: '1px solid rgb(var(--border))' }}
+                >
+                  <div>
+                    <span className="font-semibold text-sm" style={{ color: 'rgb(var(--text-primary))' }}>Bildirishnomalar</span>
+                    {unreadCount > 0 && (
+                      <span
+                        className="ml-2 badge"
+                        style={{
+                          background: 'rgba(217, 119, 6, 0.12)',
+                          color: '#D97706',
+                          border: '1px solid rgba(217, 119, 6, 0.25)',
+                        }}
+                      >
+                        {unreadCount} yangi
+                      </span>
+                    )}
                   </div>
-                ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className={`notification-item ${!n.isRead ? 'unread' : ''}`}
-                      onClick={() => {
-                        if (!n.isRead) markAsRead(n.id);
-                        setShowNotifications(false);
-                        if (n.link) {
-                          const safeLink = n.link.startsWith('/dashboard') ? n.link : `/dashboard${n.link.startsWith('/') ? '' : '/'}${n.link}`;
-                          router.push(safeLink);
-                        }
-                      }}
-                    >
-                      <div className="flex gap-3 items-start">
-                        <div className="text-lg flex-shrink-0 mt-0.5">
-                          {notificationTypeIcons[n.type] || '🔔'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-medium leading-tight" style={{ color: 'rgb(var(--text-primary))' }}>{n.title}</p>
-                            {!n.isRead && (
-                              <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: '#D97706' }} />
-                            )}
+                  <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAllAsRead();
+                        }}
+                        className="text-xs flex items-center gap-1 font-medium hover:underline text-[rgb(var(--primary))]"
+                      >
+                        <CheckCheck size={13} />
+                        Barchasini o'qi
+                      </button>
+                    )}
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearAllNotifications();
+                        }}
+                        className="text-xs font-medium text-[rgb(var(--text-muted))] hover:text-rose-500 transition-colors"
+                        title="Barcha bildirishnomalarni tozalash"
+                      >
+                        Tozalash
+                      </button>
+                    )}
+                    <button onClick={() => setShowNotifications(false)} className="p-1 rounded hover:bg-[rgb(var(--bg-elevated))] transition-colors">
+                      <X size={16} className="text-[rgb(var(--text-muted))]" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* List */}
+                <div className="overflow-y-auto flex-1 min-h-0">
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-10" style={{ color: 'rgb(var(--text-muted))' }}>
+                      <Bell size={28} className="mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">Bildirishnomalar yo'q</p>
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`notification-item ${!n.isRead ? 'unread' : ''}`}
+                        onClick={() => {
+                          if (!n.isRead) markAsRead(n.id);
+                          setShowNotifications(false);
+                          const targetLink = n.link || (n.documentId ? `/dashboard/documents/${n.documentId}` : null);
+                          if (targetLink) {
+                            const safeLink = targetLink.startsWith('/dashboard') ? targetLink : `/dashboard${targetLink.startsWith('/') ? '' : '/'}${targetLink}`;
+                            router.push(safeLink);
+                          }
+                        }}
+                      >
+                        <div className="flex gap-3 items-start">
+                          <div className="text-lg flex-shrink-0 mt-0.5">
+                            {notificationTypeIcons[n.type] || '🔔'}
                           </div>
-                          <p className="text-xs mt-1 leading-relaxed" style={{ color: 'rgb(var(--text-secondary))' }}>
-                            {n.message}
-                          </p>
-                          <p className="text-xs mt-1.5" style={{ color: 'rgb(var(--text-muted))' }}>
-                            {formatDateTime(n.createdAt)}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-medium leading-tight" style={{ color: 'rgb(var(--text-primary))' }}>{n.title}</p>
+                              {!n.isRead && (
+                                <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: '#D97706' }} />
+                              )}
+                            </div>
+                            <p className="text-xs mt-1 leading-relaxed" style={{ color: 'rgb(var(--text-secondary))' }}>
+                              {n.message}
+                            </p>
+                            <p className="text-xs mt-1.5" style={{ color: 'rgb(var(--text-muted))' }}>
+                              {formatDateTime(n.createdAt)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            </Portal>
           )}
         </div>
 

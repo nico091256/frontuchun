@@ -9,11 +9,14 @@ import { Document, DocumentStatus, Priority, DocumentType } from '@/types';
 import {
   FileText, Plus, Search, ChevronLeft, ChevronRight,
   Eye, Trash2, Paperclip, Download, X, Clock, Building2,
+  CheckSquare, Square, FileSpreadsheet, Printer,
 } from 'lucide-react';
 import {
   statusConfig, priorityConfig, docTypeConfig, formatDate,
   getDeadlineStatus, fixEncoding, hasPermission,
 } from '@/lib/utils';
+import { exportToExcel, exportToPDF } from '@/lib/exportUtils';
+import { BulkActionBar } from '@/components/common/BulkActionBar';
 import toast from 'react-hot-toast';
 
 const docTypeTabs: { value: DocumentType | ''; label: string; icon: string; desc: string }[] = [
@@ -56,6 +59,57 @@ export default function DocumentsPage() {
     total: number;
     byDocType?: { incoming: number; outgoing: number; internal: number };
   } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === documents.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(documents.map(d => d.id));
+    }
+  };
+
+  const handleExportExcel = () => {
+    const docsToExport = selectedIds.length > 0
+      ? documents.filter(d => selectedIds.includes(d.id))
+      : documents;
+
+    const columns = [
+      { header: 'Hujjat №', key: (d: any) => d.docNumber },
+      { header: 'Hujjat Nomi', key: (d: any) => d.title },
+      { header: 'Turi', key: (d: any) => docTypeConfig[d.docType as keyof typeof docTypeConfig]?.label || d.docType },
+      { header: 'Holati', key: (d: any) => statusConfig[d.status as keyof typeof statusConfig]?.label || d.status },
+      { header: 'Ustuvorlik', key: (d: any) => priorityConfig[d.priority as keyof typeof priorityConfig]?.label || d.priority },
+      { header: 'Yaratuvchi', key: (d: any) => d.creator?.fullName || '' },
+      { header: 'Bo\'lim', key: (d: any) => d.creator?.department || '' },
+      { header: 'Ijrochi', key: (d: any) => d.executor?.fullName || '' },
+      { header: 'Yaratilgan Sana', key: (d: any) => formatDate(d.createdAt) },
+    ];
+
+    exportToExcel('Hujjatlar_Ro\'yxati', columns, docsToExport);
+  };
+
+  const handleExportPDF = () => {
+    const docsToExport = selectedIds.length > 0
+      ? documents.filter(d => selectedIds.includes(d.id))
+      : documents;
+
+    const columns = [
+      { header: 'Hujjat №', key: (d: any) => d.docNumber },
+      { header: 'Hujjat Nomi', key: (d: any) => d.title },
+      { header: 'Turi', key: (d: any) => docTypeConfig[d.docType as keyof typeof docTypeConfig]?.label || d.docType },
+      { header: 'Holati', key: (d: any) => statusConfig[d.status as keyof typeof statusConfig]?.label || d.status },
+      { header: 'Yaratuvchi', key: (d: any) => d.creator?.fullName || '' },
+      { header: 'Ijrochi', key: (d: any) => d.executor?.fullName || '' },
+      { header: 'Sana', key: (d: any) => formatDate(d.createdAt) },
+    ];
+
+    exportToPDF('Hujjatlar Ro\'yxati Hisoboti', columns, docsToExport);
+  };
 
   // Document type tab state
   const [docType, setDocTypeState] = useState<DocumentType | ''>(() => {
@@ -294,8 +348,8 @@ export default function DocumentsPage() {
           )}
         </div>
 
-        {/* Priority Filter */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        {/* Priority Filter & Export Actions */}
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
           <select
             value={priority}
             onChange={(e) => {
@@ -310,6 +364,37 @@ export default function DocumentsPage() {
               </option>
             ))}
           </select>
+
+          {documents.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={toggleSelectAll}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-1.5 shrink-0"
+              >
+                {selectedIds.length === documents.length ? <CheckSquare size={14} className="text-amber-500" /> : <Square size={14} />}
+                <span className="hidden md:inline">{selectedIds.length === documents.length ? 'Bekor' : 'Tanlash'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="px-3 py-2 rounded-xl border border-emerald-500/30 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all flex items-center gap-1.5 shrink-0"
+                title="Excel ga yuklash"
+              >
+                <FileSpreadsheet size={14} />
+                <span>Excel</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleExportPDF}
+                className="px-3 py-2 rounded-xl border border-violet-500/30 text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-all flex items-center gap-1.5 shrink-0"
+                title="PDF hisobot shakllantirish"
+              >
+                <Printer size={14} />
+                <span>PDF</span>
+              </button>
+            </>
+          )}
 
           {hasActiveFilters && (
             <button
@@ -359,7 +444,7 @@ export default function DocumentsPage() {
           <div className="w-full">
 
             {/* ── MOBILE CARD VIEW (< 640px) ── */}
-            <div className="mobile-card-list sm:hidden">
+            <div className="mobile-card-list flex sm:hidden">
               {documents.map((doc, idx) => {
                 const sc = statusConfig[doc.status];
                 const dt = doc.docType || 'INTERNAL';
@@ -379,7 +464,7 @@ export default function DocumentsPage() {
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
                         <span className="text-[10px] font-mono text-[rgb(var(--text-muted))] shrink-0">#{itemNumber}</span>
-                        <span className="doc-badge font-mono text-[11px] truncate max-w-[110px]">{doc.docNumber}</span>
+                        <span className="doc-badge font-mono text-[11px] truncate max-w-[130px]">{doc.docNumber}</span>
                         <span className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border font-semibold shrink-0 ${dtc.bg} ${dtc.color} ${dtc.border}`}>
                           <span>{dtc.icon}</span><span>{dtc.shortLabel}</span>
                         </span>
@@ -396,16 +481,16 @@ export default function DocumentsPage() {
                     <div className="flex items-center justify-between gap-2 text-xs text-[rgb(var(--text-muted))]">
                       {org && (
                         <div className="flex items-center gap-1 min-w-0">
-                          <Building2 size={11} className="shrink-0" />
+                          <Building2 size={11} className="shrink-0 text-amber-500" />
                           <span className="truncate">{org}</span>
                         </div>
                       )}
-                      <span className="shrink-0">{formatDate(doc.createdAt)}</span>
+                      <span className="shrink-0 font-medium">{formatDate(doc.createdAt)}</span>
                     </div>
                     {/* satir 4: kategoriya + amallar */}
-                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-[rgb(var(--border))]">
+                    <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-[rgb(var(--border))]">
                       <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] border border-[rgb(var(--border))] font-medium truncate max-w-[100px]">
+                        <span className="text-[11px] px-2 py-0.5 rounded bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] border border-[rgb(var(--border))] font-medium truncate max-w-[140px]">
                           {doc.category}
                         </span>
                         {totalAttachments > 0 && (
@@ -414,20 +499,25 @@ export default function DocumentsPage() {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                         {doc.fileUrl && (
                           <a href={getFileUrl(doc.fileUrl)} target="_blank" rel="noopener noreferrer"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-cyan-500 border border-[rgb(var(--border))] transition-all"
+                            className="w-9 h-9 rounded-xl flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-cyan-500 border border-[rgb(var(--border))] transition-all active:scale-95"
                             title="Yuklab olish">
-                            <Download size={13} />
+                            <Download size={15} />
                           </a>
                         )}
+                        <Link href={`/dashboard/documents/${doc.id}`}
+                          className="w-9 h-9 rounded-xl flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-amber-500 border border-[rgb(var(--border))] transition-all active:scale-95"
+                          title="Ko'rish">
+                          <Eye size={15} />
+                        </Link>
                         {(user?.role === 'ADMIN' || hasPermission(user, 'DOC_DELETE') ||
                           (doc.creatorId === user?.id && ['DRAFT', 'REJECTED'].includes(doc.status))) && (
                           <button onClick={() => handleDelete(doc.id)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-rose-500 border border-[rgb(var(--border))] transition-all"
+                            className="w-9 h-9 rounded-xl flex items-center justify-center bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] hover:text-rose-500 border border-[rgb(var(--border))] transition-all active:scale-95"
                             title="O'chirish">
-                            <Trash2 size={13} />
+                            <Trash2 size={15} />
                           </button>
                         )}
                       </div>
@@ -688,6 +778,17 @@ export default function DocumentsPage() {
           </div>
         )}
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedIds.length}
+        totalCount={documents.length}
+        onClear={() => setSelectedIds([])}
+        onSelectAll={toggleSelectAll}
+        isAllSelected={selectedIds.length === documents.length && documents.length > 0}
+        onExportExcel={handleExportExcel}
+        onExportPDF={handleExportPDF}
+      />
     </div>
   );
 }

@@ -96,6 +96,7 @@ export interface Document {
   updatedAt: string;
   submittedAt?: string;
   completedAt?: string;
+  executorViewedAt?: string;
   creatorId: number;
   executorId?: number;
   creator?: Pick<User, 'id' | 'fullName' | 'email' | 'department' | 'position'>;
@@ -244,11 +245,25 @@ export interface KpiData {
     late: number;
     onTimeRate: number;
   };
-  overallRate?: number;
+  overallRate: number;
 }
 
 export interface UserKpiEntry {
   user: Pick<User, 'id' | 'fullName' | 'email' | 'role' | 'department' | 'position' | 'isActive'>;
-  kpi: KpiData & { overallRate: number };
+  kpi: KpiData;
+}
+
+export interface DocumentTemplate {
+  id: number;
+  title: string;
+  category: string;
+  docType: DocumentType;
+  content: string;
+  defaultPriority: Priority;
+  description?: string | null;
+  createdById?: number | null;
+  createdBy?: Pick<User, 'id' | 'fullName' | 'department'> | null;
+  createdAt: string;
+  updatedAt: string;
 }
 

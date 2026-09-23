@@ -2,10 +2,11 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
-import { User, Priority, DocumentType, Document } from '@/types';
+import { User, Priority, DocumentType, Document, DocumentTemplate } from '@/types';
+import { useAuthStore } from '@/store/authStore';
 import {
   ArrowLeft, Plus, Trash2, Upload, X, Calendar, AlertCircle, FileText, Zap,
-  Building2, Send, Inbox, FileCheck, CheckCircle2, Link as LinkIcon,
+  Building2, Send, Inbox, FileCheck, CheckCircle2, Link as LinkIcon, Sparkles, Bookmark,
 } from 'lucide-react';
 import { getFileTypeMeta, formatFileSize, docTypeConfig } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -30,13 +31,17 @@ const deliveryMethods = [
 function NewDocumentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuthStore();
 
   const initialDocType = (searchParams.get('docType') as DocumentType) || 'INCOMING';
   const initialReplyTo = searchParams.get('replyTo') ? Number(searchParams.get('replyTo')) : undefined;
+  const initialTemplateId = searchParams.get('templateId') ? Number(searchParams.get('templateId')) : undefined;
 
   const [docType, setDocType] = useState<DocumentType>(initialDocType);
   const [approvers, setApprovers] = useState<User[]>([]);
   const [incomingDocs, setIncomingDocs] = useState<Document[]>([]);
+  const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | ''>(initialTemplateId || '');
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [selectedApprovers, setSelectedApprovers] = useState<ApproverEntry[]>([
@@ -70,6 +75,52 @@ function NewDocumentContent() {
       .then((res) => setApprovers(res.data.data))
       .catch((err) => console.error('Approvers error:', err));
   }, []);
+
+  // Fetch templates library
+  useEffect(() => {
+    api.get('/templates')
+      .then((res) => {
+        const list = res.data.data || [];
+        setTemplates(list);
+
+        if (initialTemplateId) {
+          const found = list.find((t: DocumentTemplate) => t.id === initialTemplateId);
+          if (found) {
+            applyTemplateContent(found);
+          }
+        }
+      })
+      .catch((err) => console.error('Templates error:', err));
+  }, [initialTemplateId]);
+
+  const applyTemplateContent = (tpl: DocumentTemplate) => {
+    setDocType(tpl.docType);
+    
+    // Replace dynamic placeholders
+    const today = new Date().toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' });
+    const userFullName = user?.fullName || '____________________';
+    const userDept = user?.department || '____________________';
+    const userPos = user?.position || '____________________';
+
+    let filledContent = tpl.content || '';
+    filledContent = filledContent
+      .replace(/\{XODIM_ISMI\}/g, userFullName)
+      .replace(/\{BO'LIM\}/g, userDept)
+      .replace(/\{BOLIM\}/g, userDept)
+      .replace(/\{LAVOZIM\}/g, userPos)
+      .replace(/\{SANA\}/g, today)
+      .replace(/\{TASHKILOT\}/g, 'Discover Invest');
+
+    setForm((prev) => ({
+      ...prev,
+      title: tpl.title,
+      category: tpl.category || prev.category,
+      priority: tpl.defaultPriority || prev.priority,
+      description: filledContent,
+    }));
+
+    toast.success(`"${tpl.title}" shabloni va dinamik teglari joylashtirildi ✨`);
+  };
 
   // Fetch incoming documents list for linking in outgoing letters
   useEffect(() => {
@@ -239,6 +290,62 @@ function NewDocumentContent() {
           <p className="text-sm text-[rgb(var(--text-muted))]">
             Hujjat turini tanlang, rekvizitlarni to&apos;ldiring va ijroga yoki tasdiqqa yo&apos;naltiring
           </p>
+        </div>
+      </div>
+
+      {/* Template Engine Auto-Fill Banner */}
+      <div className="glass-card p-4 mb-6 border-indigo-500/30 bg-indigo-500/[0.04] transition-all hover:border-indigo-500/50">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/30">
+              <Bookmark size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-[rgb(var(--text-primary))]">
+                  Hujjat shablonidan foydalanish
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  SHABLON GENERATORI
+                </span>
+              </div>
+              <p className="text-xs text-[rgb(var(--text-muted))]">
+                Shablonni tanlang — tizim matn va {user?.fullName || 'foydalanuvchi'} rekvizitlarini avtomatik to&apos;ldiradi
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedTemplateId}
+              onChange={(e) => {
+                const val = Number(e.target.value) || '';
+                setSelectedTemplateId(val);
+                if (val) {
+                  const found = templates.find((t) => t.id === val);
+                  if (found) applyTemplateContent(found);
+                }
+              }}
+              className="select-field text-sm py-2 flex-1 md:flex-initial"
+              style={{ minWidth: '220px' }}
+            >
+              <option value="">-- Shablonni tanlang --</option>
+              {templates.map((tpl) => (
+                <option key={tpl.id} value={tpl.id} className="bg-[rgb(var(--bg-surface))] text-[rgb(var(--text-primary))]">
+                  {tpl.title} ({tpl.category})
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard/templates')}
+              className="btn-ghost text-xs py-2.5 px-3 shrink-0 flex items-center gap-1.5 text-indigo-400 hover:bg-indigo-500/10"
+              title="Shablonlar kutubxonasini boshqarish"
+            >
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">Kutubxona</span>
+            </button>
+          </div>
         </div>
       </div>
 
