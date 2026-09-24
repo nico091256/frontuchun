@@ -11,9 +11,9 @@ import io from 'socket.io-client';
 import toast from 'react-hot-toast';
 import DiscoverLogo from '@/components/common/DiscoverLogo';
 import ThemeToggle from '@/components/common/ThemeToggle';
-import Portal from '@/components/common/Portal';
+import { BACKEND_URL } from '@/lib/api';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+const SOCKET_URL = BACKEND_URL;
 
 export default function Navbar() {
   const { user } = useAuthStore();

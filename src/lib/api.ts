@@ -1,19 +1,15 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const isBrowser = typeof window !== 'undefined';
-const isLocalhost = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const host = isBrowser ? window.location.hostname : 'localhost';
 
 export const BACKEND_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL ||
-  (isLocalhost
-    ? 'http://localhost:5000'
-    : 'https://backenduchun-production.up.railway.app');
+  (isBrowser ? `http://${host}:5050` : 'http://localhost:5050');
 
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  (isLocalhost
-    ? 'http://localhost:5000/api'
-    : 'https://backenduchun-production.up.railway.app/api');
+  `${BACKEND_URL}/api`;
 
 export const getFileUrl = (path?: string | null): string => {
   if (!path) return '';
