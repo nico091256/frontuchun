@@ -23,13 +23,12 @@ const roleColors: Record<Role, { bg: string; color: string; border: string }> = 
 interface CreateUserForm {
   fullName: string; email: string; password: string;
   role: Role; department: string; position: string; phone: string;
-  telegramChatId: string;
   permissions: Permission[];
 }
 
 interface EditUserForm {
   fullName: string; email: string; department: string; position: string;
-  phone: string; telegramChatId: string; role: Role; isActive: boolean;
+  phone: string; role: Role; isActive: boolean;
 }
 
 type EditTab = 'info' | 'permissions' | 'password';
@@ -44,7 +43,7 @@ export default function AdminUsersPage() {
   const [formLoading, setFormLoading]   = useState(false);
   const [form, setForm] = useState<CreateUserForm>({
     fullName: '', email: '', password: '',
-    role: 'INITIATOR', department: '', position: '', phone: '', telegramChatId: '',
+    role: 'INITIATOR', department: '', position: '', phone: '',
     permissions: [...DEFAULT_ROLE_PERMISSIONS.INITIATOR],
   });
 
@@ -56,7 +55,7 @@ export default function AdminUsersPage() {
   const [editTarget, setEditTarget]     = useState<User | null>(null);
   const [editTab, setEditTab]           = useState<EditTab>('info');
   const [editForm, setEditForm]         = useState<EditUserForm>({
-    fullName: '', email: '', department: '', position: '', phone: '', telegramChatId: '', role: 'INITIATOR', isActive: true,
+    fullName: '', email: '', department: '', position: '', phone: '', role: 'INITIATOR', isActive: true,
   });
   const [editPerms, setEditPerms]       = useState<Permission[]>([]);
   const [newPassword, setNewPassword]   = useState('');
@@ -73,7 +72,6 @@ export default function AdminUsersPage() {
       department:     u.department      || '',
       position:       u.position        || '',
       phone:          u.phone           || '',
-      telegramChatId: u.telegramChatId  || '',
       role:           u.role,
       isActive:       u.isActive,
     });
@@ -119,7 +117,7 @@ export default function AdminUsersPage() {
       await api.post('/users', form);
       toast.success('Foydalanuvchi yaratildi!');
       setShowCreate(false);
-      setForm({ fullName:'',email:'',password:'',role:'INITIATOR',department:'',position:'',phone:'',telegramChatId:'',permissions:[...DEFAULT_ROLE_PERMISSIONS.INITIATOR] });
+      setForm({ fullName:'',email:'',password:'',role:'INITIATOR',department:'',position:'',phone:'',permissions:[...DEFAULT_ROLE_PERMISSIONS.INITIATOR] });
       fetchUsers();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
@@ -317,15 +315,6 @@ export default function AdminUsersPage() {
                       <div>
                         <div className="font-medium text-[rgb(var(--text-primary))]">{u.fullName}</div>
                         <div className="text-xs text-[rgb(var(--text-muted))]">{u.email}</div>
-                        {u.telegramChatId ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20 mt-1" title="Telegram Bot ulangan">
-                            💬 TG: {u.telegramChatId}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] text-[rgb(var(--text-muted))] bg-white/[0.04] px-1.5 py-0.5 rounded mt-1" title="Telegram ulash uchun tahrirlang">
-                            💬 TG yo'q
-                          </span>
-                        )}
                       </div>
                     </div>
                   </td>
@@ -461,16 +450,7 @@ export default function AdminUsersPage() {
                       <input value={form.phone} onChange={e => setForm({...form,phone:e.target.value})}
                         className="input-field text-sm py-2" placeholder="+998 90 123 45 67" />
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-semibold text-[rgb(var(--text-primary))]">Telegram Chat ID</label>
-                        <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-500 hover:underline">
-                          ID olish
-                        </a>
-                      </div>
-                      <input value={form.telegramChatId} onChange={e => setForm({...form,telegramChatId:e.target.value})}
-                        className="input-field text-sm py-2" placeholder="Masalan: 123456789" />
-                    </div>
+
 
                     {/* Permissions */}
                     <div className="col-span-2 pt-3 border-t border-[rgb(var(--border))]">
@@ -627,17 +607,7 @@ export default function AdminUsersPage() {
                           onChange={e => setEditForm({...editForm, phone:e.target.value})}
                           className="input-field text-sm py-2" placeholder="+998 90 123 45 67" />
                       </div>
-                      <div className="col-span-2 sm:col-span-1">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label className="block text-xs font-semibold text-[rgb(var(--text-primary))]">Telegram Chat ID</label>
-                          <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-500 hover:underline">
-                            ID qanday olinadi?
-                          </a>
-                        </div>
-                        <input value={editForm.telegramChatId}
-                          onChange={e => setEditForm({...editForm, telegramChatId:e.target.value})}
-                          className="input-field text-sm py-2" placeholder="Masalan: 123456789" />
-                      </div>
+
                     </div>
 
                     <div className="flex justify-end pt-2">

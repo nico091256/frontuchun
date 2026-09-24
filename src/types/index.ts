@@ -57,7 +57,6 @@ export interface User {
   avatar?: string;
   isActive: boolean;
   permissions?: Permission[];
-  telegramChatId?: string;
   createdAt: string;
   _count?: {
     createdDocuments: number;
