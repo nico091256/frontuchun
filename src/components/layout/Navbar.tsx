@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import DiscoverLogo from '@/components/common/DiscoverLogo';
 import ThemeToggle from '@/components/common/ThemeToggle';
 import { BACKEND_URL } from '@/lib/api';
+import Portal from '@/components/common/Portal';
 
 const SOCKET_URL = BACKEND_URL;
 
