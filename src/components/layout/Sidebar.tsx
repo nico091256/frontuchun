@@ -104,7 +104,7 @@ export default function Sidebar() {
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Discover Invest Official Logo */}
-        <div className="sidebar-logo flex items-center justify-between">
+        <div className="sidebar-logo h-16 px-5 flex items-center justify-between shrink-0">
           <Link href="/dashboard" className="flex items-center gap-2 group">
             <DiscoverLogo height={30} className="group-hover:opacity-90 transition-opacity" />
           </Link>
