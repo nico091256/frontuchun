@@ -17,11 +17,15 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
+    const backendHost = process.env.BACKEND_INTERNAL_URL || 'http://localhost:5050';
     return [
       {
         source: '/api/:path*',
-        destination:
-          process.env.NEXT_PUBLIC_API_URL || 'https://backenduchun-production.up.railway.app/api/:path*',
+        destination: `${backendHost}/api/:path*`,
+      },
+      {
+        source: '/uploads/:path*',
+        destination: `${backendHost}/uploads/:path*`,
       },
     ];
   },
