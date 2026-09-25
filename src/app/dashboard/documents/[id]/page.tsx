@@ -548,7 +548,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
   const sc = statusConfig[document.status];
   const pc = priorityConfig[document.priority];
   const dt = docTypeConfig[document.docType || 'INTERNAL'];
-  const deadline = getDeadlineStatus(document.overallDeadline);
+  const deadline = getDeadlineStatus(document.overallDeadline, document.status);
 
   return (
     <div className="animate-fade-in space-y-5 max-w-4xl mx-auto">

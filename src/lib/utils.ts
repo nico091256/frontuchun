@@ -90,8 +90,17 @@ export const formatDateTime = (date: string | Date | undefined): string => {
 };
 
 // Deadline relative
-export const getDeadlineStatus = (deadline?: string): { label: string; color: string; urgent: boolean } => {
+export const getDeadlineStatus = (
+  deadline?: string,
+  status?: string
+): { label: string; color: string; urgent: boolean } => {
   if (!deadline) return { label: 'Belgilanmagan', color: 'text-slate-400', urgent: false };
+
+  // Agar hujjat allaqachon yakunlangan / bajarilgan bo'lsa (COMPLETED, EXECUTED, APPROVED, REJECTED, CANCELLED)
+  const isFinished = status && ['COMPLETED', 'EXECUTED', 'APPROVED', 'REJECTED', 'CANCELLED'].includes(status);
+  if (isFinished) {
+    return { label: 'Yakunlangan', color: 'text-emerald-400', urgent: false };
+  }
 
   const now = new Date();
   const due = new Date(deadline);
